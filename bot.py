@@ -2,6 +2,7 @@ import discord
 import asyncio
 import config
 from discord.ext import commands
+from discord import app_commands
 
 
 class LoaderBot(commands.Bot):

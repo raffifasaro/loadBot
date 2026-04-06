@@ -7,8 +7,9 @@ class DownloadCog(discord.ext.commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="download", description="Download media from link")
-    async def download(self, interaction: discord.Interaction):
-        await interaction.response.send_message("Downloading media")
+    @app_commands.describe(download_link="Link from which media is downloaded")
+    async def download(self, interaction: discord.Interaction, download_link: str):
+        await interaction.response.send_message(f"Downloading {download_link}")
 
 async def setup(bot):
     await bot.add_cog(DownloadCog(bot))
