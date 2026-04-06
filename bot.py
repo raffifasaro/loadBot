@@ -1,13 +1,13 @@
 import discord
 import asyncio
 import config
-from discord import app_commands
+from discord.ext import commands
 
-class VideoBot(discord.Client):
 
-    def __init__(self, intents):
-        super().__init__(intents=intents)
-        self.tree = app_commands.CommandTree(self)
+class LoaderBot(commands.Bot):
+
+    def __init__(self, intents, command_prefix="!"):
+        super().__init__(intents=intents, command_prefix=command_prefix)
 
     async def on_ready(self):
         print(f"Logged in as {self.user}")
@@ -19,10 +19,9 @@ class VideoBot(discord.Client):
         if message.content == "!ping":
             await message.channel.send("pong")
 
+    # Setup hook for command cogs
     async def setup_hook(self):
-        @self.tree.command(name="download", description="Download media from link")
-        async def download(interaction: discord.Interaction):
-            await interaction.response.send_message("Downloading media")
+        await self.load_extension("cogs.downloadCog")
 
         await self.tree.sync()
 
@@ -32,7 +31,7 @@ async def main():
     intents = discord.Intents.default()
     intents.message_content = True
 
-    bot = VideoBot(intents=intents)
+    bot = LoaderBot(intents=intents)
     await bot.start(config.DISCORD_TOKEN)
 
 
