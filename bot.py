@@ -2,8 +2,6 @@ import discord
 import asyncio
 import config
 from discord.ext import commands
-from discord import app_commands
-
 
 class LoaderBot(commands.Bot):
 
@@ -26,7 +24,6 @@ class LoaderBot(commands.Bot):
 
         await self.tree.sync()
 
-        
 
 async def main():
     intents = discord.Intents.default()
