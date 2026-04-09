@@ -1,8 +1,10 @@
+import time
 import yt_dlp
 import config
 import os
 import pathlib
 import uuid
+import subprocess
 
 
 def download_file(url: str) -> str:
@@ -18,9 +20,6 @@ def download_file(url: str) -> str:
         'format': 'best',
         'noplaylist': True,
         'quiet': True,
-        'no_warnings': True,
-        'ignoreerrors': True,
-        'max_filesize': config.MAX_FILE_SIZE_BYTES,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -32,3 +31,33 @@ def download_file(url: str) -> str:
         except Exception as e:
             print(f"Error downloading file: {e}")
             return None
+        
+def compress_video(input_path, crf=28, preset="medium"):
+  
+    base, ext = os.path.splitext(input_path)
+    output_path = f"{base}_compressed.mp4"
+
+    command = [
+        "ffmpeg",
+        "-i", input_path,
+        "-vcodec", "libx264",
+        "-crf", str(crf),
+        "-preset", preset,
+        "-acodec", "aac",
+        "-b:a", "128k",
+        output_path
+    ]
+
+    subprocess.run(command, check=True)
+
+    return output_path
+
+
+def wait_for_file(path, timeout=30):
+    start = time.time()
+    while not os.path.exists(path):
+        if time.time() - start > timeout:
+            return False
+        time.sleep(0.5)
+    return True
+    
