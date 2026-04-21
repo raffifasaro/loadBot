@@ -4,7 +4,7 @@ import config
 import os
 import pathlib
 import uuid
-import subprocess
+import cv2
 
 
 def download_file(url: str) -> str:
@@ -32,24 +32,32 @@ def download_file(url: str) -> str:
             print(f"Error downloading file: {e}")
             return None
         
-def compress_video(input_path, crf=28, preset="medium"):
+def compress_video(input_path):
   
     base, ext = os.path.splitext(input_path)
     output_path = f"{base}_compressed.mp4"
 
-    command = [
-        "ffmpeg",
-        "-i", input_path,
-        "-vcodec", "libx264",
-        "-crf", str(crf),
-        "-preset", preset,
-        "-acodec", "aac",
-        "-b:a", "128k",
-        output_path
-    ]
+    cap = cv2.VideoCapture(input_path)
 
-    subprocess.run(command, check=True)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) // 2)
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) // 2)
+    fps = cap.get(cv2.CAP_PROP_FPS)
 
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame = cv2.resize(frame, (width, height))
+        out.write(frame)
+
+    cap.release()
+    out.release()
+
+    os.remove(input_path)
     return output_path
 
 

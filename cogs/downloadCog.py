@@ -27,9 +27,19 @@ class DownloadCog(discord.ext.commands.Cog):
             print(f"File size: {os.path.getsize(file_path)} bytes")
 
             if os.path.getsize(file_path) > config.MAX_FILE_SIZE_BYTES:
-                print("Compressing file")
 
+                if not config.COMPRESSION_MODE:
+                    await interaction.followup.send("File is too large to send and compression mode is disabled.")
+                    os.remove(file_path)
+                    return
+
+                print("starting compression")
                 compressed_path = compress_video(file_path)
+
+                if not compressed_path or not wait_for_file(compressed_path):
+                    await interaction.followup.send("Video compression failed or timed out.")
+                    os.remove(file_path)
+                    return
 
                 if os.path.getsize(compressed_path) <= config.MAX_FILE_SIZE_BYTES:
                     await interaction.followup.send(file=discord.File(compressed_path))
@@ -37,8 +47,11 @@ class DownloadCog(discord.ext.commands.Cog):
                     await interaction.followup.send("Compressed file is still too large to send.")
 
                 os.remove(compressed_path)
+                return
             else:
                 await interaction.followup.send(file=discord.File(file_path))
+                os.remove(file_path)
+                return
 
         else:
             await interaction.followup.send("Failed to download video.")
